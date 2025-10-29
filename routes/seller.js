@@ -21,7 +21,20 @@ router.post("/signup",isAccCreated,async (req,res)=>{
         expiresIn : "1h"
     });
     // 3rd -> insert the data in the database with hash passwword
-    await sellerModel.create(req.body);
+    await sellerModel.create({
+    username : req.body.username,
+    password : "kashyap123@",
+    email : "kashyapdas2234@gmail.com",
+    fullName: "Kashyap Jyoti Das",
+    phoneNo : 8876829466,
+    recoveryCode : 8172,
+    address : {
+        country : "India",
+        state : "Assam",
+        city : "Guwahati",
+        street : "AEC Road"  
+    }
+});
     // 4th -> set the jwt token in the cokkie 
     res.cookie("token", jwtToken, {
         httpOnly: true,      // JS cannot read
