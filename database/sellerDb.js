@@ -1,6 +1,23 @@
 const mongoose = require("mongoose");
 const { Schema } = require("zod");
-
+// desing of sub-schema Address
+const addressSchemaSeller = new mongoose.Schema({
+    country : {
+        type : String,
+        required : true
+    },
+    state : {
+        type : String,
+        required : true
+    },
+    city : {
+        type : String,
+        required : true
+    },
+    street : {
+        type : String, // value is "optional" 
+    }
+})
 // designing the schema 
 const sellerAccSchema = new mongoose.Schema({
     username : {
@@ -32,25 +49,13 @@ const sellerAccSchema = new mongoose.Schema({
         required : true
     }
 })
-// desing of sub-schema Address
-const addressSchemaSeller = new mongoose.Schema({
-    country : {
-        type : String,
-        required : true
-    },
-    sate : {
-        type : String,
-        required : true
-    },
-    city : {
-        type : String,
-        required : true
-    },
-    street : {
-        type : String, // value is "optional" 
-    }
-})
 
+// schema for images
+const c_imgSchema = new mongoose.Schema({
+    filename : String,
+    mimetype : String,
+    data : Buffer
+});
 const courseSchema = new mongoose.Schema({
     c_name : {
         type : String,
@@ -77,12 +82,7 @@ const courseSchema = new mongoose.Schema({
         required : true
     }
 })
-// schema for images
-const c_imgSchema = new mongoose.Schema({
-    filename : String,
-    mimetype : String,
-    data : Buffer
-});
+
 
 // design the model
 const sellerModel = new mongoose.model("sellertable",sellerAccSchema);

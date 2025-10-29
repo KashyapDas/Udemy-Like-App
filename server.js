@@ -1,8 +1,18 @@
 const express = require("express");
 const rootFile = require("./routes/root");
-
+const mongoose = require("mongoose");
+const cors = require("cors");
+const dotenv = require("dotenv");
 const app = express();
+const PORT = process.env.PORT || 3000
+
+app.use(cors());
+app.use(express.json());
+
+dotenv.config();
+
+mongoose.connect(`${process.env.DATABASE_URL}`);
 
 app.use("/api/v1/acc",rootFile);
 
-app.listen(3000,()=>console.log("Server started successfully..."));
+app.listen(PORT,()=>console.log(`Server started at port ${PORT} successfully...`));
