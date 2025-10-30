@@ -4,6 +4,8 @@ const passHash = require("../security/bcrypt/passHash");
 const { sellerModel } = require("../database/sellerDb");
 const isAccCreated = require("../middleware/seller/isAccCreated");
 const doEncrypt = require("../security/salting/doEncrypt");
+const signIn = require("../zod/sellerZod/signIn");
+const isAccExist = require("../middleware/seller/isAccExist");
 
 const router = express.Router();
 
@@ -46,10 +48,14 @@ router.post("/signup",isAccCreated,async (req,res)=>{
     });
 })
 // account get the permission if it is already created
-router.post("/signin",(req,res)=>{
-    // check for the zod schema
-    // check if the user already exist middleware in database
+router.post("/signin",isAccExist,(req,res)=>{
     // if then => take the user password and compare with the passowrd inside the token
+    // get the token from the cookie and then decrypt the token and get the password and then create the hashPassword of the DB using the built-in module 
+    // const token = req.cookies.token;
+    // console.log(decodedPassword);
+    res.json({
+        msg : "Hello from signIn"
+    })
     // if true => then give "user successfully login" msg 
 })
 // forget password feature route

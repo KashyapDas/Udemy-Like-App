@@ -5,7 +5,7 @@ const addressSchemaZod = zod.object({
     state : zod.string(),
     city : zod.string(),
     street : zod.string().optional(),  
-}) 
+}); 
 
 const accountSchemaZod = zod.object({
     username : zod.string(),
@@ -15,7 +15,7 @@ const accountSchemaZod = zod.object({
     phoneNo : zod.number(),
     address : addressSchemaZod,
     recoveryCode: zod.number(),
-})
+});
 
 
 
