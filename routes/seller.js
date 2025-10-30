@@ -3,33 +3,36 @@ const jwt = require("jsonwebtoken");
 const passHash = require("../security/bcrypt/passHash");
 const { sellerModel } = require("../database/sellerDb");
 const isAccCreated = require("../middleware/seller/isAccCreated");
+const doEncrypt = require("../security/salting/doEncrypt");
 
 const router = express.Router();
 
 // account created if the user isn't exist 
 router.post("/signup",isAccCreated,async (req,res)=>{
     // means data is valid and acc not present in database
-    const {email, phoneNo, username, password, } = req.body;
+    const {email, phoneNo, username, password, fullName, recoveryCode} = req.body;
     // 1st -> Use Bcrypt and hash the passoword
     const hashedPassword = await passHash(password);
-    // 2nd -> insert the data in the database with hash passwword
+    // 2nd => call the built-in salting module and hash the password that I want to store
+    const builtSaltiHash = await doEncrypt(password, email);
+    // 3rd -> insert the data in the database with hash passwword
     const userDetails = await sellerModel.create({
-        username : req.body.username,
-        password : hashedPassword,
-        email : req.body.email,
-        fullName: req.body.fullName,
-        phoneNo : req.body.phoneNo,
-        recoveryCode : req.body.recoveryCode,
+        username : username,
+        password : builtSaltiHash,
+        email : email,
+        fullName: fullName,
+        phoneNo : phoneNo,
+        recoveryCode : recoveryCode,
         address : req.body.address
     });
-    // 3rd -> create a jwt token based on the email, phoneNo, passoword, username,
+    // 4th -> create a jwt token based on the email, phoneNo, passoword, username,
     const jwtToken = jwt.sign({
         hashedPassword : hashedPassword, 
         userID : userDetails._id
     },process.env.JWT_TOKEN,{
         expiresIn : "1h"
     });
-    // 4th -> set the jwt token in the cokkie 
+    // 5th -> set the jwt token in the cokkie 
     res.cookie("token", jwtToken, {
         httpOnly: true,      // JS cannot read
         secure: true,        // only HTTPS in production
