@@ -12,24 +12,23 @@ router.post("/signup",isAccCreated,async (req,res)=>{
     const {email, phoneNo, username, password, } = req.body;
     // 1st -> Use Bcrypt and hash the passoword
     const hashedPassword = await passHash(password);
-    // 2nd -> create a jwt token based on the email, phoneNo, passoword, username,
-    const jwtIdentifier = email || username || phoneNo;
+    // 2nd -> insert the data in the database with hash passwword
+    const userDetails = await sellerModel.create({
+        username : req.body.username,
+        password : hashedPassword,
+        email : req.body.email,
+        fullName: req.body.fullName,
+        phoneNo : req.body.phoneNo,
+        recoveryCode : req.body.recoveryCode,
+        address : req.body.address
+    });
+    // 3rd -> create a jwt token based on the email, phoneNo, passoword, username,
     const jwtToken = jwt.sign({
-        hashedPassword, 
-        jwtIdentifier
+        hashedPassword : hashedPassword, 
+        userID : userDetails._id
     },process.env.JWT_TOKEN,{
         expiresIn : "1h"
     });
-    // 3rd -> insert the data in the database with hash passwword
-    await sellerModel.create({
-    username : req.body.username,
-    password : hashedPassword,
-    email : req.body.email,
-    fullName: req.body.fullName,
-    phoneNo : req.body.phoneNo,
-    recoveryCode : req.body.recoveryCode,
-    address : req.body.address
-});
     // 4th -> set the jwt token in the cokkie 
     res.cookie("token", jwtToken, {
         httpOnly: true,      // JS cannot read
