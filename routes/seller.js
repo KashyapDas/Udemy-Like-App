@@ -23,17 +23,12 @@ router.post("/signup",isAccCreated,async (req,res)=>{
     // 3rd -> insert the data in the database with hash passwword
     await sellerModel.create({
     username : req.body.username,
-    password : "kashyap123@",
-    email : "kashyapdas2234@gmail.com",
-    fullName: "Kashyap Jyoti Das",
-    phoneNo : 8876829466,
-    recoveryCode : 8172,
-    address : {
-        country : "India",
-        state : "Assam",
-        city : "Guwahati",
-        street : "AEC Road"  
-    }
+    password : hashedPassword,
+    email : req.body.email,
+    fullName: req.body.fullName,
+    phoneNo : req.body.phoneNo,
+    recoveryCode : req.body.recoveryCode,
+    address : req.body.address
 });
     // 4th -> set the jwt token in the cokkie 
     res.cookie("token", jwtToken, {
@@ -50,7 +45,10 @@ router.post("/signup",isAccCreated,async (req,res)=>{
 })
 // account get the permission if it is already created
 router.post("/signin",(req,res)=>{
-
+    // check for the zod schema
+    // check if the user already exist middleware in database
+    // if then => take the user password and compare with the passowrd inside the token
+    // if true => then give "user successfully login" msg 
 })
 // forget password feature route
 router.post("/forgetPassword",(req,res)=>{
