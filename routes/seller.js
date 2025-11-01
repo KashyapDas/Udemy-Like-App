@@ -4,7 +4,6 @@ const passHash = require("../security/bcrypt/passHash");
 const { sellerModel } = require("../database/sellerDb");
 const isAccCreated = require("../middleware/seller/isAccCreated");
 const doEncrypt = require("../security/salting/doEncrypt");
-const signIn = require("../zod/sellerZod/signIn");
 const isAccExist = require("../middleware/seller/isAccExist");
 
 const router = express.Router();
@@ -49,13 +48,21 @@ router.post("/signup",isAccCreated,async (req,res)=>{
 })
 // account get the permission if it is already created
 router.post("/signin",isAccExist,(req,res)=>{
-    // if then => take the user password and compare with the passowrd inside the token
-    // get the token from the cookie and then decrypt the token and get the password and then create the hashPassword of the DB using the built-in module 
-    // const token = req.cookies.token;
-    // console.log(decodedPassword);
+    // check for the zod schema and then check the account existance in the database using middleware
+    // if acc exist then create a jwt token using that password and email/username/phoneNO
+    const userData = req.body;
+    const createToken = jwt.sign(userData,process.env.JWT_TOKEN);
+    res.cookie("token", createToken, {
+        httpOnly: true,      // JS cannot read
+        secure: true,        // only HTTPS in production
+        sameSite: "strict",  // prevent CSRF
+        maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    // Now store that token in the cookie  
     res.json({
-        msg : "Hello from signIn"
-    })
+        msg : "signIn successfull",
+        action : false
+    });
     // if true => then give "user successfully login" msg 
 })
 // forget password feature route
