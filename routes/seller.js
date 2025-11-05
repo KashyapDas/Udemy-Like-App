@@ -47,11 +47,12 @@ router.post("/signup",isAccCreated,async (req,res)=>{
     });
 })
 // account get the permission if it is already created
-router.post("/signin",isAccExist,(req,res)=>{
+router.post("/signin",isAccExist,async (req,res)=>{
     // check for the zod schema and then check the account existance in the database using middleware
     // if acc exist then create a jwt token using that password and email/username/phoneNO
-    const userData = req.body;
-    const createToken = jwt.sign(userData,process.env.JWT_TOKEN);
+    // create a bcrypt password and store it in jwt and send it to the cookies.
+    // Also check what user send - email, username, PhoneNo using a function that return an objects 
+    const createToken = jwt.sign(req.body,process.env.JWT_TOKEN);
     res.cookie("token", createToken, {
         httpOnly: true,      // JS cannot read
         secure: true,        // only HTTPS in production
@@ -67,7 +68,13 @@ router.post("/signin",isAccExist,(req,res)=>{
 })
 // forget password feature route
 router.post("/forgetPassword",(req,res)=>{
-    
+    // generate an random otp of 6 digit
+    // implement a 3rd party package to send an otp to an email. Basically give it us and we will verify it in our backend
+    // after that allow to change the password, but if it is same as previous then stop to do the changes, else proccessed
+    res.json({
+        msg : "Password changed successfully...",
+        action : true
+    });
 })
 
 
