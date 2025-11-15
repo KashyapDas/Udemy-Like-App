@@ -5,6 +5,7 @@ const { sellerModel } = require("../database/sellerDb");
 const isAccCreated = require("../middleware/seller/isAccCreated");
 const doEncrypt = require("../security/salting/doEncrypt");
 const isAccExist = require("../middleware/seller/isAccExist");
+const { getData } = require("../functions/isSinginAccCreated");
 
 const router = express.Router();
 
@@ -51,8 +52,14 @@ router.post("/signin",isAccExist,async (req,res)=>{
     // check for the zod schema and then check the account existance in the database using middleware
     // if acc exist then create a jwt token using that password and email/username/phoneNO
     // create a bcrypt password and store it in jwt and send it to the cookies.
+    const bcryptPassword = await passHash(req.body.password);
+    const createToken = jwt.sign({
+        hashedPassword : bcryptPassword, 
+        userID : req.headers.userActionsid
+    },process.env.JWT_TOKEN,{
+        expiresIn : "1h"
+    });
     // Also check what user send - email, username, PhoneNo using a function that return an objects 
-    const createToken = jwt.sign(req.body,process.env.JWT_TOKEN);
     res.cookie("token", createToken, {
         httpOnly: true,      // JS cannot read
         secure: true,        // only HTTPS in production
@@ -62,7 +69,7 @@ router.post("/signin",isAccExist,async (req,res)=>{
     // Now store that token in the cookie  
     res.json({
         msg : "signIn successfull",
-        action : false
+        action : true
     });
     // if true => then give "user successfully login" msg 
 })

@@ -23,6 +23,8 @@ const isAccExist = async (req,res,next)=>{
         });
         return;
     }
+    req.headers.userActionspassword = result[0].password;
+    req.headers.userActionsid = result[0]._id;
     next();
 }
 
