@@ -187,6 +187,17 @@ router.post("/updatePassword",async (req,res)=>{
     });
 })
 
+// Seller account dashboard -> fetch the seller account data 
+router.post("/dashboard",(req,res)=>{
+
+});
+
+// Seller account course upload => Insert the seller course to database 
+router.post("/courseCreated",(req,res)=>{
+
+});
+
+
 
 
 
