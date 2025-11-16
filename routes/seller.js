@@ -5,9 +5,13 @@ const { sellerModel } = require("../database/sellerDb");
 const isAccCreated = require("../middleware/seller/isAccCreated");
 const doEncrypt = require("../security/salting/doEncrypt");
 const isAccExist = require("../middleware/seller/isAccExist");
-const { getData } = require("../functions/isSinginAccCreated");
+const cookieParser = require("cookie-parser");
+const checkEmailOrPassword = require("../functions/checkEmailOrPassword");
+const sendMail = require("../functions/sendMail");
 
 const router = express.Router();
+
+router.use(cookieParser());
 
 // account created if the user isn't exist 
 router.post("/signup",isAccCreated,async (req,res)=>{
@@ -74,15 +78,115 @@ router.post("/signin",isAccExist,async (req,res)=>{
     // if true => then give "user successfully login" msg 
 })
 // forget password feature route
-router.post("/forgetPassword",(req,res)=>{
-    // generate an random otp of 6 digit
-    // implement a 3rd party package to send an otp to an email. Basically give it us and we will verify it in our backend
-    // after that allow to change the password, but if it is same as previous then stop to do the changes, else proccessed
+router.post("/otpsent",async (req,res)=>{
+        // take the email or phoneNo as the user input
+        const userDataComes = checkEmailOrPassword(req.body.email, req.body.phoneNo);
+        const findUserByEmail = await sellerModel.find({
+            [userDataComes.dataKey] : userDataComes.dataVal
+        });
+
+        if(!findUserByEmail)
+        {
+            return res.json({
+                msg : "Account not exists...",
+                action : false
+            });
+        }
+        // generate an otp here
+        let otp = "";
+        for(let i=0; i<=3; i++)
+        {
+            otp+= Math.round(Math.random()*10);
+        }
+        // check what user enter -> email or password
+        if(userDataComes.dataKey == 'email')
+        {
+            // send otp to the email
+            try{
+                await sendMail(userDataComes.dataVal,otp);
+            }catch(err)
+            {
+                return res.json("Something went wrong...Try again later...");
+            }
+        }
+        else if(userDataComes.dataKey == 'phoneNo')
+        {
+            // send otp to the phone no
+        }
+        
     res.json({
-        msg : "Password changed successfully...",
+        msg : "OTP sent successfully...",
+        action : true,
+        fieldValue : userDataComes.dataVal,  // sent email or phoneNo
+        originalOtp : otp,
+        userId : findUserByEmail[0]._id   // send the original otp
+    });
+})
+
+router.post("/verifyotp",(req,res)=>{
+    // we need the otp generate in the backend and the otp user enter
+    const frontendOTP = req.headers.otp;
+    const email = req.body.email;
+    const userId = req.body.userId;
+    
+    // req.headers.orginalOTP  original otp
+    if(frontendOTP != req.body.originalOTP)
+    {
+        return res.json({
+            msg : "Invalid otp...",
+            action : false
+        });
+    }
+
+    res.json({
+        msg : "otp verify successfully...",
+        action : true,
+        email : email,
+        userId : userId
+    });
+})
+
+router.post("/updatePassword",async (req,res)=>{
+    // take the new password and create one built-in hash and bcrypt hash
+    const email = req.body.email;
+    const newPassword = req.body.newPassword;
+    const userId = req.body.userId;
+
+
+    const builtHash = await doEncrypt(newPassword, email)
+    // we need the email and then update the password to newPassoword
+    const updateResult = await sellerModel.updateOne({
+        email : email
+    },{
+        password : builtHash
+    });
+    if(!updateResult)
+    {
+        return res.json({
+            msg : "Something went wrong...Try again later...",
+            action : false
+        });
+    }
+    const hashedPassword = await passHash(newPassword);
+    const jwtToken = jwt.sign({
+        hashedPassword : hashedPassword, 
+        userID : userId
+    },process.env.JWT_TOKEN,{
+        expiresIn : "1h"
+    });
+    res.cookie("token", jwtToken, {
+        httpOnly: true,      // JS cannot read
+        secure: true,        // only HTTPS in production
+        sameSite: "strict",  // prevent CSRF
+        maxAge: 60 * 60 * 1000 // 1 hour
+    });
+    
+    res.json({
+        msg : "Password Update Successfully...",
         action : true
     });
 })
+
 
 
 
